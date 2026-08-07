@@ -29,6 +29,13 @@
       "when": 1786101431687,
       "tag": "0003_burly_switch",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786110753985,
+      "tag": "0004_fixed_scalphunter",
+      "breakpoints": true
     }
   ]
 }

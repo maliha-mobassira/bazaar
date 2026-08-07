@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -5,29 +7,72 @@
 }
 
 :root {
-  /* Light Theme */
-  --bg: #f4f6f9;
-  --surface: #ffffff;
-  --card: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border: #e5e7eb;
-  --accent: #9f8be7;
+  /* Nude / Sand & Espresso Light Theme */
+  --bg: #F1EDE6;
+  /* Pure Alabaster Chalk */
+  --surface: #EBE3DB;
+  /* Off-white Linen / Warm Creamy Alabaster */
+  --card: #FAF9F6;
+
+  --text-primary: #1c1613;
+  /* Deep Espresso Brown (Elegantly soft dark text) */
+  --text-secondary: #A48374;
+  /* Muted Dusty Mauve / Warm Taupe */
+
+  --border: rgba(164, 131, 116, 0.22);
+  /* Warm Taupe border */
+  --accent: #3A2D28;
+  /* Deep Espresso high contrast buttons */
+  --accent-light: rgba(164, 131, 116, 0.08);
+  --accent-hover: #503F38;
+
+  --sand-caramel: #CBAD8D;
+  /* Latte Caramel */
+  --bg-image-opacity: 0.06;
 }
 
 [data-theme="dark"] {
-  --bg: #0f1115;
-  --surface: #161a22;
-  --card: #1c2230;
-  --text-primary: #f5f7fa;
-  --text-secondary: #9ca3af;
-  --border: #262b36;
-  --accent: #9f8be7;
+  /* Warm Velvet Espresso Dark Theme (No Greens, using Espresso & Latte Caramel) */
+  --bg: #3A2D28;
+  /* Deep Espresso Brown backdrop */
+  --surface: #2E2420;
+  /* Denser dark espresso card surface */
+  --card: #342924;
+
+  --text-primary: #F1EDE6;
+  /* Ivory Alabaster Text */
+  --text-secondary: #CBAD8D;
+  /* Latte Caramel Secondary Text */
+
+  --border: rgba(241, 237, 230, 0.18);
+  /* Ivory line borders */
+  --accent: #CBAD8D;
+  /* Latte Caramel Accent highlights */
+  --accent-light: rgba(203, 173, 141, 0.12);
+  --accent-hover: #D8BF9F;
+
+  --bg-image-opacity: 0.04;
 }
 
 body {
   background: var(--bg);
   color: var(--text-primary);
-  font-family: Arial, Helvetica, sans-serif;
-  transition: background 0.2s ease, color 0.2s ease;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+.serif-font {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* Luxury transitions */
+.smooth-transition {
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }

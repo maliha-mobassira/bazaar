@@ -52,11 +52,12 @@ async function verifyToken(token: string, secret: string): Promise<AuthPayload |
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Protect API routes except login & onboard
+  // Protect API routes except login, onboard, & debug
   if (
     pathname.startsWith("/api") &&
     !pathname.startsWith("/api/login") &&
-    !pathname.startsWith("/api/onboard")
+    !pathname.startsWith("/api/onboard") &&
+    !pathname.startsWith("/api/debug")
   ) {
     const authHeader = req.headers.get("authorization");
 

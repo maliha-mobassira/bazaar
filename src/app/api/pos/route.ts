@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { items } = body; // [{ productId, quantity }]
+  const { items, discountAmount, customerName, customerPhone } = body; // [{ productId, quantity }], number, string, string
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     return NextResponse.json(
@@ -68,7 +68,10 @@ export async function POST(req: NextRequest) {
           .values({
             tenantId,
             userId,
-            totalAmount: totalAmount.toString(),
+            totalAmount: Math.max(0, totalAmount - Number(discountAmount || 0)).toString(),
+            discountAmount: (discountAmount || 0).toString(),
+            customerName: customerName || null,
+            customerPhone: customerPhone || null,
           })
           .returning();
 
