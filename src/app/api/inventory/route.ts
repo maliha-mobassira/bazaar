@@ -37,6 +37,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const roleCheck = requireRole(req, ["admin", "manager"]);
+    if (roleCheck) return roleCheck;
+
     const tenantId = req.headers.get("x-tenant-id");
 
     if (!tenantId) {

@@ -96,11 +96,11 @@ export default function DashboardLayout({
 
   // Filter menu items by user role
   const menuItems = [
-    { name: "Dashboard", href: "/", allowedRoles: ["admin", "manager"] },
-    { name: "Products", href: "/products", allowedRoles: ["admin"] },
-    { name: "Inventory", href: "/inventory", allowedRoles: ["admin", "manager"] },
-    { name: "Reports", href: "/reports", allowedRoles: ["admin"] },
-    { name: "Checkout", href: "/pos", allowedRoles: ["admin", "manager", "cashier"] },
+    { name: "Dashboard", href: "/", allowedRoles: ["admin", "manager"], icon: "📊" },
+    { name: "Products", href: "/products", allowedRoles: ["admin"], icon: "📦" },
+    { name: "Inventory", href: "/inventory", allowedRoles: ["admin", "manager"], icon: "📋" },
+    { name: "Reports", href: "/reports", allowedRoles: ["admin"], icon: "📈" },
+    { name: "Checkout", href: "/pos", allowedRoles: ["admin", "manager", "cashier"], icon: "🛒" },
   ].filter((item) => item.allowedRoles.includes(user.role));
 
   return (
@@ -229,8 +229,10 @@ export default function DashboardLayout({
                 key={item.href}
                 href={item.href}
                 style={{
-                  display: "block",
-                  padding: "10px 32px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "12px 32px",
                   textDecoration: "none",
                   fontSize: "11px",
                   fontWeight: isActive ? 600 : 500,
@@ -238,9 +240,11 @@ export default function DashboardLayout({
                   letterSpacing: "0.2em",
                   color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
                   borderLeft: isActive ? "3px solid var(--text-primary)" : "3px solid transparent",
-                  transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+                  background: isActive ? "var(--accent-light)" : "transparent",
+                  transition: "all 0.4s",
                 }}
               >
+                <span style={{ fontSize: "14px" }}>{item.icon}</span>
                 {item.name}
               </Link>
             );
@@ -278,7 +282,7 @@ export default function DashboardLayout({
                       letterSpacing: "0.05em",
                       fontWeight: 600,
                       cursor: "pointer",
-                      borderRadius: "0px",
+                      borderRadius: "4px",
                       transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
                     }}
                   >
@@ -296,7 +300,7 @@ export default function DashboardLayout({
               background: "transparent",
               border: "1px solid var(--border)",
               color: "var(--text-primary)",
-              borderRadius: "0px",
+              borderRadius: "8px",
               cursor: "pointer",
               fontSize: "11px",
               textTransform: "uppercase",
@@ -311,19 +315,71 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main
-        className="main-content"
-        style={{
-          flex: 1,
-          padding: "80px 64px",
-          background: "var(--bg)",
-          transition: "background 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-          minWidth: 0,
-        }}
-      >
-        {children}
-      </main>
+      {/* Main Content Area Container with header */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        
+        {/* Top Header Bar */}
+        <header
+          style={{
+            height: "72px",
+            background: "var(--surface)",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 40px",
+            transition: "all 0.4s",
+          }}
+        >
+          {/* Left: Store status */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)" }}>Bazaar Retail Group</span>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981" }} />
+            <span style={{ fontSize: "10px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Operational</span>
+          </div>
+
+          {/* Right: User initials & profile info */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "var(--text-primary)",
+                color: "var(--bg)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "11px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+              }}
+            >
+              {(user.email || "user@bazaar.com").slice(0, 2)}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>{user.email || "user@bazaar.com"}</span>
+              <span style={{ fontSize: "8px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", fontWeight: 700 }}>
+                {user.role}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <main
+          className="main-content"
+          style={{
+            flex: 1,
+            padding: "48px 40px",
+            background: "var(--bg)",
+            transition: "background 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+            overflowY: "auto",
+            minWidth: 0,
+          }}
+        >
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

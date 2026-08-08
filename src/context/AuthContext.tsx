@@ -7,6 +7,7 @@ interface User {
   userId: string;
   tenantId: string;
   role: string;
+  email?: string;
 }
 
 interface AuthContextType {
@@ -35,6 +36,7 @@ function decodeToken(token: string): User | null {
         userId: data.userId,
         tenantId: data.tenantId,
         role: data.role,
+        email: data.email || "user@bazaar.com",
       };
     }
     return null;

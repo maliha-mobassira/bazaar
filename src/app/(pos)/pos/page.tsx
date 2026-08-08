@@ -21,39 +21,63 @@ export default function CheckoutPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [checkoutStatus, setCheckoutStatus] = useState<{ success: boolean; message: string } | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+
+  // Customer CRM & Checkout inputs
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [discountInput, setDiscountInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  // Shift totals (mocked/persisted in state)
+  const [shiftSales, setShiftSales] = useState(0);
+  const [shiftTransactions, setShiftTransactions] = useState(0);
+
+  // Receipt Modal state
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [lastSaleDetails, setLastSaleDetails] = useState<{
+    id: string;
+    total: number;
+    subtotal: number;
+    discount: number;
+    items: { name: string; quantity: number; price: number }[];
+    customerName?: string;
+  } | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Fetch catalog products on mount
-  useEffect(() => {
-    const fetchCatalog = async () => {
-      try {
-        setLoading(true);
-        const data = await getProducts();
-        setProducts(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to load catalog products");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCatalog();
+  // 1. Fetch catalog products
+  const fetchCatalog = async () => {
+    try {
+      setLoading(true);
+      const data = await getProducts();
+      setProducts(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to load catalog products");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Auto-focus search input
+  useEffect(() => {
+    fetchCatalog();
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, []);
 
-  // 2. Cart Operations
+  // 2. Add to Cart
   const handleAddToCart = (product: Product) => {
+    // Check if stock is available
+    const existing = cart.find((item) => item.product.id === product.id);
+    const cartQty = existing ? existing.quantity : 0;
+    
+    // If quantity in product stock is <= cartQty, warn (except if quantity is not tracked/undefined)
+    if (product.quantity !== undefined && product.quantity !== null && product.quantity <= cartQty) {
+      alert(`Cannot add more. Only ${product.quantity} units left in stock.`);
+      return;
+    }
+
     setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.product.id === product.id);
       if (existing) {
         return prevCart.map((item) =>
           item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
@@ -63,7 +87,19 @@ export default function CheckoutPage() {
     });
   };
 
+  // 3. Update quantity inside cart
   const handleUpdateQuantity = (productId: string, delta: number) => {
+    const item = cart.find((i) => i.product.id === productId);
+    if (!item) return;
+
+    if (delta > 0) {
+      const product = products.find((p) => p.id === productId);
+      if (product && product.quantity !== undefined && product.quantity !== null && product.quantity <= item.quantity) {
+        alert(`Cannot add more. Only ${product.quantity} units left in stock.`);
+        return;
+      }
+    }
+
     setCart((prevCart) =>
       prevCart
         .map((item) => {
@@ -81,11 +117,10 @@ export default function CheckoutPage() {
     setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
   };
 
-  // 3. Complete checkout sale
+  // 4. Complete checkout
   const handleCompleteSale = async () => {
     if (cart.length === 0) return;
     setSubmitting(true);
-    setCheckoutStatus(null);
 
     try {
       const itemsPayload = cart.map((item) => ({
@@ -93,50 +128,83 @@ export default function CheckoutPage() {
         quantity: item.quantity,
       }));
 
+      const discountAmount = Number(discountInput) || 0;
+      const subtotal = cart.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
+      const total = Math.max(0, subtotal - discountAmount);
+
       const sale = await createSale(itemsPayload, {
-        discountAmount: Number(discountInput) || 0,
+        discountAmount,
         customerName: customerName.trim() || undefined,
         customerPhone: customerPhone.trim() || undefined,
       });
 
+      // Update Cashier Shift Summary values
+      setShiftSales((prev) => prev + total);
+      setShiftTransactions((prev) => prev + 1);
+
+      // Save sale details for receipt display modal
+      setLastSaleDetails({
+        id: sale.id,
+        total,
+        subtotal,
+        discount: discountAmount,
+        customerName: customerName.trim() || undefined,
+        items: cart.map(item => ({
+          name: item.product.name,
+          quantity: item.quantity,
+          price: Number(item.product.price)
+        }))
+      });
+
+      // Reset cart and checkout details
       setCart([]);
       setCustomerName("");
       setCustomerPhone("");
       setDiscountInput("");
-      setCheckoutStatus({
-        success: true,
-        message: `✅ Sale completed successfully. Receipt ID: ${sale.id.slice(0, 8).toUpperCase()}`,
-      });
-
-      // Clear success banner after 4 seconds
-      setTimeout(() => setCheckoutStatus(null), 4000);
+      
+      // Open receipt modal
+      setIsReceiptOpen(true);
+      
+      // Refresh local product list to update stock level markers
+      fetchCatalog();
     } catch (err: any) {
-      setCheckoutStatus({
-        success: false,
-        message: err.message || "Transaction failed during checkout processing.",
-      });
+      alert(err.message || "Transaction failed during checkout processing.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // 4. Calculations
+  // Cart totals
   const cartSubtotal = cart.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
   const discountAmount = Number(discountInput) || 0;
   const cartTotal = Math.max(0, cartSubtotal - discountAmount);
   const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // 5. Filters
+  // Filters mapping
   const filtered = products.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.sku.toLowerCase().includes(search.toLowerCase())
   );
 
-  const categories = ["all", ...Array.from(new Set(products.map((p) => p.category).filter((c): c is string => !!c)))];
+  const getNormalizedCategory = (cat?: string) => {
+    if (!cat) return "General";
+    const c = cat.trim();
+    return c.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  };
+
+  const categories = ["all", ...Array.from(new Set(products.map((p) => getNormalizedCategory(p.category))))].sort();
   const displayedProducts = filtered.filter(
-    (p) => selectedCategory === "all" || p.category === selectedCategory
+    (p) => selectedCategory === "all" || getNormalizedCategory(p.category) === selectedCategory
   );
+
+  // Stock status resolver
+  const getStockStatus = (qty: number) => {
+    if (qty === 0) return { label: "Out of Stock", color: "#ef4444" };
+    if (qty < 10) return { label: "Critical", color: "#dc2626" };
+    if (qty <= 20) return { label: "Low", color: "#d97706" };
+    return { label: "In Stock", color: "#10b981" };
+  };
 
   return (
     <div
@@ -152,20 +220,41 @@ export default function CheckoutPage() {
     >
       <style>{`
         .product-card {
-          transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          border-radius: 16px;
         }
         .product-card:hover {
           transform: translateY(-4px);
           border-color: var(--text-primary) !important;
-          box-shadow: 0 12px 32px rgba(0,0,0,0.02) !important;
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.04) !important;
         }
         .product-card img {
-          transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          transition: transform 0.5s ease !important;
         }
         .product-card:hover img {
-          transform: scale(1.05);
+          transform: scale(1.04);
         }
-        @media (max-width: 900px) {
+        .scrollable-capsules {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          padding-bottom: 8px;
+        }
+        .scrollable-capsules::-webkit-scrollbar {
+          height: 4px;
+        }
+        .scrollable-capsules::-webkit-scrollbar-thumb {
+          background: var(--border);
+          border-radius: 2px;
+        }
+        .receipt-line {
+          display: flex;
+          justify-content: space-between;
+          font-size: 13px;
+          border-bottom: 1px dashed var(--border);
+          padding: 8px 0;
+        }
+        @media (max-width: 960px) {
           .checkout-main {
             flex-direction: column !important;
             overflow-y: auto !important;
@@ -189,7 +278,7 @@ export default function CheckoutPage() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 32px",
-          transition: "background 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+          transition: "all 0.4s",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
@@ -199,12 +288,13 @@ export default function CheckoutPage() {
               textDecoration: "none",
               color: "var(--text-primary)",
               fontSize: "11px",
-              fontWeight: 500,
+              fontWeight: 600,
               textTransform: "uppercase",
               letterSpacing: "0.15em",
               padding: "10px 18px",
               border: "1px solid var(--border)",
-              transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+              borderRadius: "8px",
+              transition: "all 0.2s",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--text-primary)";
@@ -213,7 +303,7 @@ export default function CheckoutPage() {
               e.currentTarget.style.borderColor = "var(--border)";
             }}
           >
-            ← Dashboard
+            ← Back to Store
           </Link>
           <Logo size={26} direction="row" />
           <span
@@ -222,7 +312,7 @@ export default function CheckoutPage() {
               textTransform: "uppercase",
               letterSpacing: "0.2em",
               color: "var(--text-secondary)",
-              fontWeight: 500,
+              fontWeight: 600,
               borderLeft: "1px solid var(--border)",
               paddingLeft: "24px",
             }}
@@ -233,8 +323,8 @@ export default function CheckoutPage() {
 
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", borderRight: "1px solid var(--border)", paddingRight: "20px" }}>
-            <span style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", fontWeight: 600 }}>
-              Simulate:
+            <span style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--text-secondary)", fontWeight: 700 }}>
+              Role Toggle:
             </span>
             <select
               value={user?.role || "admin"}
@@ -249,7 +339,7 @@ export default function CheckoutPage() {
                 letterSpacing: "0.05em",
                 fontWeight: 600,
                 outline: "none",
-                borderRadius: "0px",
+                borderRadius: "6px",
                 cursor: "pointer",
               }}
             >
@@ -262,10 +352,10 @@ export default function CheckoutPage() {
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Checkout Container */}
       <div className="checkout-main" style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         
-        {/* Left Side: Product Catalog */}
+        {/* Left Column: Product Grid Selector */}
         <div
           style={{
             flex: 1,
@@ -273,27 +363,27 @@ export default function CheckoutPage() {
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: "28px",
+            gap: "24px",
           }}
         >
-          {/* Search and Category Filter Capsule row */}
+          {/* Search bar & Category capsules filter */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search catalog by SKU or product name..."
+              placeholder="Search register products by name or SKU..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{
                 width: "100%",
-                padding: "14px 18px",
+                padding: "12px 18px",
                 border: "1px solid var(--border)",
                 background: "var(--surface)",
                 color: "var(--text-primary)",
                 fontSize: "13px",
                 outline: "none",
-                borderRadius: "0px",
-                transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+                borderRadius: "8px",
+                transition: "all 0.2s",
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = "var(--text-primary)";
@@ -303,26 +393,28 @@ export default function CheckoutPage() {
               }}
             />
 
-            {/* Category Capsules */}
+            {/* Scrollable Category Capsules */}
             {categories.length > 1 && (
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <div className="scrollable-capsules">
                 {categories.map((cat) => {
-                  const isActive = selectedCategory === cat;
+                  const isActive = selectedCategory === cat.toLowerCase();
                   return (
                     <button
                       key={cat}
-                      onClick={() => setSelectedCategory(cat)}
+                      onClick={() => setSelectedCategory(cat.toLowerCase())}
                       style={{
                         padding: "8px 16px",
                         background: isActive ? "var(--text-primary)" : "var(--surface)",
                         color: isActive ? "var(--bg)" : "var(--text-secondary)",
                         border: "1px solid " + (isActive ? "var(--text-primary)" : "var(--border)"),
-                        borderRadius: "0px",
+                        borderRadius: "20px",
                         fontSize: "10px",
+                        fontWeight: 600,
                         textTransform: "uppercase",
-                        letterSpacing: "0.1em",
+                        letterSpacing: "0.08em",
                         cursor: "pointer",
-                        transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+                        whiteSpace: "nowrap",
+                        transition: "all 0.2s",
                       }}
                     >
                       {cat}
@@ -333,43 +425,16 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Catalog grid */}
+          {/* Catalog Loading/Empty Grid */}
           {loading ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "80px",
-                color: "var(--text-secondary)",
-                fontSize: "11px",
-                textTransform: "uppercase",
-                letterSpacing: "0.2em",
-              }}
-            >
-              Loading register catalog...
-            </div>
-          ) : error ? (
-            <div
-              style={{
-                padding: "16px",
-                background: "rgba(239, 68, 68, 0.05)",
-                border: "1px solid rgba(239, 68, 68, 0.15)",
-                color: "#ef4444",
-                fontSize: "13px",
-              }}
-            >
-              {error}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "24px" }}>
+              {Array(6).fill(0).map((_, idx) => (
+                <div key={idx} style={{ height: "260px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px" }} />
+              ))}
             </div>
           ) : displayedProducts.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "80px",
-                color: "var(--text-secondary)",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-              }}
-            >
-              No matching products found.
+            <div style={{ textAlign: "center", padding: "80px", color: "var(--text-secondary)", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: "16px" }}>
+              No matching products found in store catalog.
             </div>
           ) : (
             <div
@@ -380,181 +445,165 @@ export default function CheckoutPage() {
                 paddingBottom: "32px",
               }}
             >
-              {displayedProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="product-card"
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "0px",
-                    display: "flex",
-                    flexDirection: "column",
-                    overflow: "hidden",
-                    transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-                  }}
-                >
-                  {/* Image container */}
+              {displayedProducts.map((product) => {
+                const stock = getStockStatus(product.quantity ?? 0);
+                return (
                   <div
+                    key={product.id}
+                    className="product-card"
                     style={{
-                      height: "150px",
-                      background: "var(--bg)",
-                      position: "relative",
-                      borderBottom: "1px solid var(--border)",
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      display: "flex",
+                      flexDirection: "column",
                       overflow: "hidden",
                     }}
                   >
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={product.name}
+                    {/* Card Cover image */}
+                    <div
+                      style={{
+                        height: "140px",
+                        background: "var(--bg)",
+                        position: "relative",
+                        borderBottom: "1px solid var(--border)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "var(--text-secondary)" }}>📦</div>
+                      )}
+                      
+                      {/* Stock indicator badge */}
+                      <span
                         style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          transition: "transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "10px",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.1em",
-                          color: "var(--text-secondary)",
+                          position: "absolute",
+                          bottom: "8px",
+                          right: "8px",
+                          padding: "3px 8px",
+                          background: "var(--surface)",
+                          border: "1px solid var(--border)",
+                          borderRadius: "4px",
+                          fontSize: "8px",
+                          fontWeight: 700,
+                          color: stock.color,
                         }}
                       >
-                        N/A
+                        {stock.label} ({product.quantity ?? 0})
+                      </span>
+                    </div>
+
+                    {/* Description Details */}
+                    <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <span style={{ fontFamily: "monospace", fontSize: "9px", color: "var(--text-secondary)" }}>{product.sku}</span>
+                      <h4 style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: 0, lineClamp: 2 }}>{product.name}</h4>
+                      
+                      {/* Stock mini indicator progress bar */}
+                      <div style={{ width: "100%", height: "3px", background: "var(--border)", borderRadius: "1px", overflow: "hidden", marginTop: "4px" }}>
+                        <div style={{ height: "100%", background: stock.color, width: `${Math.min(100, ((product.quantity ?? 0) / 40) * 100)}%` }} />
                       </div>
-                    )}
-                  </div>
 
-                  {/* Product details */}
-                  <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <span
-                      style={{
-                        fontFamily: "monospace",
-                        fontSize: "9px",
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      {product.sku}
-                    </span>
-                    <h4
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "var(--text-primary)",
-                        lineHeight: 1.3,
-                        margin: 0,
-                      }}
-                    >
-                      {product.name}
-                    </h4>
-                    <span
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: 600,
-                        color: "var(--text-primary)",
-                        marginTop: "auto",
-                        paddingTop: "6px",
-                      }}
-                    >
-                      ${Number(product.price).toFixed(2)}
-                    </span>
-                  </div>
+                      <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", marginTop: "auto", paddingTop: "8px" }}>
+                        ${Number(product.price).toFixed(2)}
+                      </span>
+                    </div>
 
-                  {/* Add action */}
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    style={{
-                      border: "none",
-                      borderTop: "1px solid var(--border)",
-                      background: "transparent",
-                      color: "var(--text-primary)",
-                      padding: "12px",
-                      fontSize: "10px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.15em",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "var(--text-primary)";
-                      e.currentTarget.style.color = "var(--bg)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "var(--text-primary)";
-                    }}
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              ))}
+                    {/* Add to Cart checkout button */}
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      disabled={product.quantity === 0}
+                      style={{
+                        border: "none",
+                        borderTop: "1px solid var(--border)",
+                        background: "transparent",
+                        color: "var(--text-primary)",
+                        padding: "12px",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        cursor: product.quantity === 0 ? "not-allowed" : "pointer",
+                        opacity: product.quantity === 0 ? 0.4 : 1,
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (product.quantity !== 0) {
+                          e.currentTarget.style.background = "var(--text-primary)";
+                          e.currentTarget.style.color = "var(--bg)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color = "var(--text-primary)";
+                      }}
+                    >
+                      {product.quantity === 0 ? "Out of Stock" : "Add to Order"}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Right Side: Cart Panel */}
+        {/* Right Column: Checkout Cart Order summary */}
         <div
           className="cart-sidebar"
           style={{
-            width: "420px",
+            width: "400px",
             background: "var(--surface)",
             borderLeft: "1px solid var(--border)",
             display: "flex",
             flexDirection: "column",
             height: "100%",
-            transition: "background 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+            transition: "all 0.4s",
           }}
         >
-          {/* Header */}
-          <div style={{ padding: "24px 32px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "22px", fontWeight: 400, fontStyle: "italic", margin: 0 }}>
-              Current Selection
-            </h3>
-            <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)" }}>
-              {totalItemsCount} items
-            </span>
-          </div>
-
-          {/* Cart list panel */}
+          {/* Shift Sales stats widget */}
           <div
             style={{
-              flex: 1,
-              padding: "24px 32px",
-              overflowY: "auto",
+              padding: "14px 24px",
+              background: "var(--accent-light)",
+              borderBottom: "1px solid var(--border)",
               display: "flex",
-              flexDirection: "column",
-              gap: "20px",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: "10px",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
             }}
           >
+            <span>Shift Sales: <strong style={{ color: "var(--text-primary)" }}>${shiftSales.toFixed(2)}</strong></span>
+            <span>Transactions: <strong style={{ color: "var(--text-primary)" }}>{shiftTransactions}</strong></span>
+          </div>
+
+          <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)" }}>
+            <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "24px", fontWeight: 400, fontStyle: "italic", margin: 0 }}>
+              Order Basket
+            </h3>
+          </div>
+
+          {/* Cart item elements */}
+          <div style={{ flex: 1, padding: "24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px" }}>
             {cart.length === 0 ? (
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--text-secondary)",
-                  textAlign: "center",
-                  padding: "40px 0",
-                }}
-              >
-                <span style={{ fontSize: "36px", marginBottom: "16px", display: "block" }}>🛒</span>
-                <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.15em", fontWeight: 600, display: "block", color: "var(--text-primary)" }}>
-                  Your cart is empty
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", textAlign: "center" }}>
+                <span style={{ fontSize: "32px", marginBottom: "12px" }}>🛒</span>
+                <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, color: "var(--text-primary)" }}>
+                  Basket is Empty
                 </span>
-                <span style={{ fontSize: "12px", marginTop: "6px", color: "var(--text-secondary)", maxWidth: "240px", lineHeight: 1.4 }}>
-                  Search and add products from the catalog to start checkout.
+                <span style={{ fontSize: "12px", marginTop: "4px", color: "var(--text-secondary)", maxWidth: "200px" }}>
+                  Select items from the catalog grid to compile checkout.
                 </span>
               </div>
             ) : (
@@ -566,77 +615,27 @@ export default function CheckoutPage() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     borderBottom: "1px solid var(--border)",
-                    paddingBottom: "16px",
+                    paddingBottom: "12px",
                   }}
                 >
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px", maxWidth: "200px" }}>
-                    <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)" }}>
-                      {item.product.name}
-                    </span>
-                    <span style={{ fontSize: "10px", fontFamily: "monospace", color: "var(--text-secondary)" }}>
-                      {item.product.sku} (${Number(item.product.price).toFixed(2)})
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxWidth: "180px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>{item.product.name}</span>
+                    <span style={{ fontSize: "9px", fontFamily: "monospace", color: "var(--text-secondary)" }}>
+                      ${Number(item.product.price).toFixed(2)} each
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    {/* Controls */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      <button
-                        onClick={() => handleUpdateQuantity(item.product.id, -1)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "var(--text-primary)",
-                          padding: "6px 12px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                        }}
-                      >
-                        -
-                      </button>
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          padding: "0 4px",
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => handleUpdateQuantity(item.product.id, 1)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "var(--text-primary)",
-                          padding: "6px 12px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                        }}
-                      >
-                        +
-                      </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    {/* Plus/minus buttons */}
+                    <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "6px" }}>
+                      <button onClick={() => handleUpdateQuantity(item.product.id, -1)} style={{ background: "transparent", border: "none", color: "var(--text-primary)", padding: "4px 10px", cursor: "pointer", fontSize: "12px" }}>-</button>
+                      <span style={{ fontSize: "11px", fontWeight: 700, padding: "0 2px" }}>{item.quantity}</span>
+                      <button onClick={() => handleUpdateQuantity(item.product.id, 1)} style={{ background: "transparent", border: "none", color: "var(--text-primary)", padding: "4px 10px", cursor: "pointer", fontSize: "12px" }}>+</button>
                     </div>
 
-                    {/* Delete */}
                     <button
                       onClick={() => handleRemoveFromCart(item.product.id)}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "#ef4444",
-                        cursor: "pointer",
-                        fontSize: "16px",
-                        padding: "4px",
-                      }}
-                      title="Remove item"
+                      style={{ background: "transparent", border: "none", color: "#ef4444", fontSize: "16px", cursor: "pointer", padding: "4px" }}
                     >
                       ×
                     </button>
@@ -646,78 +645,23 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Feedback/Status overlay banner */}
-          {checkoutStatus && (
-            <div
-              style={{
-                margin: "0 32px 16px 32px",
-                padding: "12px 16px",
-                background: checkoutStatus.success ? "rgba(16, 185, 129, 0.05)" : "rgba(239, 68, 68, 0.05)",
-                border: "1px solid " + (checkoutStatus.success ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)"),
-                color: checkoutStatus.success ? "#10b981" : "#ef4444",
-                fontSize: "12px",
-                letterSpacing: "0.02em",
-              }}
-            >
-              {checkoutStatus.message}
-            </div>
-          )}
-
-          {/* Customer CRM & Discount Inputs */}
-          <div
-            style={{
-              padding: "20px 32px",
-              borderTop: "1px solid var(--border)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              background: "var(--bg)",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "9px",
-                textTransform: "uppercase",
-                letterSpacing: "0.15em",
-                color: "var(--text-secondary)",
-                fontWeight: 600,
-                display: "block",
-              }}
-            >
-              Customer & Discount Details
-            </span>
-            <div style={{ display: "flex", gap: "10px" }}>
+          {/* Customer details input capsule */}
+          <div style={{ padding: "20px 24px", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "10px", background: "var(--bg)" }}>
+            <span style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-secondary)", fontWeight: 700 }}>Customer CRM & Discount</span>
+            <div style={{ display: "flex", gap: "8px" }}>
               <input
                 type="text"
-                placeholder="Customer Name"
+                placeholder="Name"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: "10px 14px",
-                  border: "1px solid var(--border)",
-                  background: "var(--surface)",
-                  color: "var(--text-primary)",
-                  fontSize: "12px",
-                  outline: "none",
-                  borderRadius: "0px",
-                }}
+                style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-primary)", fontSize: "12px", borderRadius: "6px", outline: "none" }}
               />
               <input
                 type="text"
-                placeholder="Phone Number"
+                placeholder="Phone"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: "10px 14px",
-                  border: "1px solid var(--border)",
-                  background: "var(--surface)",
-                  color: "var(--text-primary)",
-                  fontSize: "12px",
-                  outline: "none",
-                  borderRadius: "0px",
-                }}
+                style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-primary)", fontSize: "12px", borderRadius: "6px", outline: "none" }}
               />
             </div>
             <input
@@ -725,73 +669,27 @@ export default function CheckoutPage() {
               placeholder="Discount Amount ($)"
               value={discountInput}
               onChange={(e) => setDiscountInput(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--text-primary)",
-                fontSize: "12px",
-                outline: "none",
-                borderRadius: "0px",
-              }}
+              style={{ width: "100%", padding: "8px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-primary)", fontSize: "12px", borderRadius: "6px", outline: "none" }}
               min="0"
               step="0.01"
             />
           </div>
 
-          {/* Checkout Totals & Button */}
-          <div
-            style={{
-              padding: "32px",
-              borderTop: "1px solid var(--border)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "11px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.15em",
-                  color: "var(--text-secondary)",
-                }}
-              >
+          {/* Checkout Totals & complete sale */}
+          <div style={{ padding: "24px", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)" }}>
                 <span>Subtotal:</span>
                 <span>${cartSubtotal.toFixed(2)}</span>
               </div>
               {discountAmount > 0 && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "11px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.15em",
-                    color: "#ef4444",
-                  }}
-                >
-                  <span>Discount:</span>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", color: "#ef4444" }}>
+                  <span>Discount Applied:</span>
                   <span>-${discountAmount.toFixed(2)}</span>
                 </div>
               )}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                  borderTop: "1px solid var(--border)",
-                  paddingTop: "16px",
-                  marginTop: "6px",
-                }}
-              >
-                <span>Total:</span>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", borderTop: "1px solid var(--border)", paddingTop: "12px", marginTop: "4px" }}>
+                <span>Total Due:</span>
                 <span>${cartTotal.toFixed(2)}</span>
               </div>
             </div>
@@ -801,32 +699,115 @@ export default function CheckoutPage() {
               disabled={cart.length === 0 || submitting}
               style={{
                 width: "100%",
-                padding: "16px",
+                padding: "14px",
                 background: "var(--text-primary)",
                 color: "var(--bg)",
                 border: "none",
-                borderRadius: "0px",
-                fontWeight: 600,
+                borderRadius: "8px",
+                fontWeight: 700,
                 cursor: cart.length === 0 || submitting ? "not-allowed" : "pointer",
                 opacity: cart.length === 0 || submitting ? 0.5 : 1,
                 fontSize: "11px",
                 textTransform: "uppercase",
-                letterSpacing: "0.2em",
-                transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-              }}
-              onMouseEnter={(e) => {
-                if (cart.length > 0 && !submitting) e.currentTarget.style.opacity = "0.8";
-              }}
-              onMouseLeave={(e) => {
-                if (cart.length > 0 && !submitting) e.currentTarget.style.opacity = "1";
+                letterSpacing: "0.15em",
+                transition: "all 0.2s",
               }}
             >
-              {submitting ? "Processing Transaction..." : "Complete Checkout"}
+              {submitting ? "Processing Checkout..." : "Complete Checkout"}
             </button>
           </div>
         </div>
 
       </div>
+
+      {/* Checkout Receipt Dialog Modal */}
+      {isReceiptOpen && lastSaleDetails && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.3)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+          <div style={{ width: "100%", maxWidth: "420px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "40px", boxShadow: "0 24px 64px rgba(0,0,0,0.12)" }}>
+            <div style={{ textHeading: "center", borderBottom: "1px solid var(--border)", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}>
+              <Logo size={24} />
+              <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "28px", fontWeight: 400, fontStyle: "italic", margin: "12px 0 4px 0" }}>
+                Sale Completed
+              </h2>
+              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontFamily: "monospace", textTransform: "uppercase" }}>
+                Receipt: {lastSaleDetails.id.toUpperCase()}
+              </span>
+            </div>
+
+            {/* Receipt Table Items */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "20px" }}>
+              {lastSaleDetails.items.map((itm, idx) => (
+                <div key={idx} className="receipt-line">
+                  <span>{itm.name} (x{itm.quantity})</span>
+                  <span>${(itm.price * itm.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Calculations summaries */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--text-secondary)" }}>
+                <span>Subtotal:</span>
+                <span>${lastSaleDetails.subtotal.toFixed(2)}</span>
+              </div>
+              {lastSaleDetails.discount > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#ef4444" }}>
+                  <span>Discount:</span>
+                  <span>-${lastSaleDetails.discount.toFixed(2)}</span>
+                </div>
+              )}
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", borderTop: "1px solid var(--border)", paddingTop: "8px" }}>
+                <span>Paid Total:</span>
+                <span>${lastSaleDetails.total.toFixed(2)}</span>
+              </div>
+              {lastSaleDetails.customerName && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--text-secondary)", marginTop: "8px" }}>
+                  <span>Customer:</span>
+                  <span>{lastSaleDetails.customerName}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Receipts controls buttons */}
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={() => { alert("Receipt sent to printer spooler."); }}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  color: "var(--text-primary)",
+                }}
+              >
+                Print Receipt
+              </button>
+              <button
+                onClick={() => setIsReceiptOpen(false)}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  background: "var(--text-primary)",
+                  color: "var(--bg)",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                New Transaction
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

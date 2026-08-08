@@ -64,36 +64,135 @@ export async function GET() {
         })
         .returning();
 
-      // 5. Insert test product
-      const [product] = await tx
-        .insert(products)
-        .values({
+      // 5. Insert test products
+      const productsToSeed = [
+        {
           id: "71d22837-87d0-484c-80b8-fca79641a3a9",
-          tenantId: tenant.id,
           name: "Premium Blend Coffee",
           sku: "COFFEE-PREM-12",
-          price: "2.99",
+          price: "14.99",
           category: "groceries",
-          image: "https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/thumbnail.webp",
-        })
-        .returning();
-
-      // 6. Insert inventory for the product
-      const [stock] = await tx
-        .insert(inventory)
-        .values({
-          id: "b44742cd-d2fb-4741-a2e7-15b752ce0d4a",
-          tenantId: tenant.id,
-          productId: product.id,
+          image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&auto=format&fit=crop&q=60",
           quantity: 50,
-        })
-        .returning();
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b1",
+          name: "Organic Green Tea",
+          sku: "TEA-ORGA-08",
+          price: "8.99",
+          category: "groceries",
+          image: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=300&auto=format&fit=crop&q=60",
+          quantity: 40,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b2",
+          name: "Wireless Bluetooth Earbuds",
+          sku: "EAR-WIRE-BT",
+          price: "79.99",
+          category: "electronics",
+          image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=300&auto=format&fit=crop&q=60",
+          quantity: 25,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b3",
+          name: "Minimalist Leather Wallet",
+          sku: "WL-MIN-LTHR",
+          price: "45.00",
+          category: "accessories",
+          image: "https://images.unsplash.com/photo-1627124765135-56c33fc3ae1f?w=300&auto=format&fit=crop&q=60",
+          quantity: 30,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b4",
+          name: "Stainless Steel Water Bottle",
+          sku: "BT-SST-24",
+          price: "24.99",
+          category: "home",
+          image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=300&auto=format&fit=crop&q=60",
+          quantity: 60,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b5",
+          name: "Hydrating Face Serum",
+          sku: "SRM-HYD-50",
+          price: "29.90",
+          category: "beauty",
+          image: "https://images.unsplash.com/photo-1608248597481-496100c80836?w=300&auto=format&fit=crop&q=60",
+          quantity: 45,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b6",
+          name: "Ergonomic Desk Chair",
+          sku: "CH-ERG-DK",
+          price: "189.00",
+          category: "furniture",
+          image: "https://images.unsplash.com/photo-1580481072645-022f9a6dbf27?w=300&auto=format&fit=crop&q=60",
+          quantity: 10,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b7",
+          name: "Mechanical Keyboard",
+          sku: "KB-MECH-RGB",
+          price: "109.99",
+          category: "electronics",
+          image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=300&auto=format&fit=crop&q=60",
+          quantity: 15,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b8",
+          name: "Organic Cotton T-Shirt",
+          sku: "TS-COT-ORG",
+          price: "19.99",
+          category: "apparel",
+          image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=300&auto=format&fit=crop&q=60",
+          quantity: 80,
+        },
+        {
+          id: "92d22837-87d0-484c-80b8-fca79641a3b9",
+          name: "Aromatherapy Reed Diffuser",
+          sku: "DF-AROMA-RD",
+          price: "18.50",
+          category: "home",
+          image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=300&auto=format&fit=crop&q=60",
+          quantity: 35,
+        }
+      ];
+
+      const seededProducts = [];
+      const seededStock = [];
+
+      for (const p of productsToSeed) {
+        const [prod] = await tx
+          .insert(products)
+          .values({
+            id: p.id,
+            tenantId: tenant.id,
+            name: p.name,
+            sku: p.sku,
+            price: p.price,
+            category: p.category,
+            image: p.image,
+          })
+          .returning();
+
+        const [inv] = await tx
+          .insert(inventory)
+          .values({
+            tenantId: tenant.id,
+            productId: prod.id,
+            quantity: p.quantity,
+          })
+          .returning();
+
+        seededProducts.push(prod);
+        seededStock.push(inv);
+      }
 
       return {
         tenant,
         users: { admin, cashier },
-        product,
-        stock,
+        products: seededProducts,
+        stock: seededStock,
       };
     });
 

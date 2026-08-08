@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,10 +76,109 @@ export default function LoginPage() {
         background: "var(--bg)",
         fontFamily: "'Inter', sans-serif",
         overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
         transition: "background 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
-      {/* Full-Screen Closet Background Image */}
+      <style>{`
+        .login-card {
+          width: 100%;
+          max-width: 420px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 56px 48px;
+          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+          z-index: 2;
+          opacity: 0;
+          transform: translateY(24px);
+          animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes fadeUp {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .login-input {
+          width: 100%;
+          padding: 14px 16px;
+          border: 1px solid var(--border);
+          background: rgba(0, 0, 0, 0.02);
+          color: var(--text-primary);
+          font-size: 13px;
+          outline: none;
+          border-radius: 8px;
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        [data-theme="dark"] .login-input {
+          background: rgba(0, 0, 0, 0.15);
+        }
+
+        .login-input:focus {
+          border-color: var(--accent);
+          background: var(--bg);
+          box-shadow: 0 0 0 4px var(--accent-light);
+        }
+
+        .login-button {
+          width: 100%;
+          padding: 14px;
+          background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+          color: var(--bg);
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.15em;
+          cursor: pointer;
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 12px var(--accent-light);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+
+        .login-button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px var(--accent-light);
+          opacity: 0.95;
+        }
+
+        .login-button:active:not(:disabled) {
+          transform: translateY(0);
+          opacity: 0.9;
+        }
+
+        .login-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .spinner {
+          width: 14px;
+          height: 14px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: #fff;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      {/* Full-Screen Closet Background Image with Espresso-based Dark Overlay */}
       <div
         style={{
           position: "absolute",
@@ -86,126 +186,103 @@ export default function LoginPage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: "url('/closet_editorial.png')",
+          backgroundImage: "linear-gradient(rgba(28, 22, 19, 0.65), rgba(28, 22, 19, 0.85)), url('/closet_editorial.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          opacity: "var(--bg-image-opacity)",
+          opacity: 0.85,
           pointerEvents: "none",
           zIndex: 0,
           transition: "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       />
 
-      {/* Content Overlay */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "flex",
-          minHeight: "100vh",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "24px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "420px",
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "0px", // Architectural sharp corners
-            padding: "56px 48px",
-            boxShadow: "none",
-            transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", marginBottom: "24px" }}>
-            <Logo size={48} />
-            <p
+      <div className="login-card">
+        {/* Logo Area */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", marginBottom: "36px", textAlign: "center" }}>
+          <Logo size={48} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <h2
               style={{
-                fontSize: "10px",
+                fontSize: "11px",
                 textTransform: "uppercase",
                 letterSpacing: "0.2em",
                 color: "var(--text-secondary)",
-                fontWeight: 500,
+                fontWeight: 700,
+                margin: 0,
               }}
             >
-              Sign in to your store
+              Retail Management Platform
+            </h2>
+            <p
+              style={{
+                fontSize: "12px",
+                color: "var(--text-secondary)",
+                opacity: 0.8,
+                margin: 0,
+              }}
+            >
+              Secure access to your store dashboard
             </p>
           </div>
+        </div>
 
-          {error && (
-            <div
+        {error && (
+          <div
+            style={{
+              padding: "12px 16px",
+              background: "rgba(239, 68, 68, 0.05)",
+              border: "1px solid rgba(239, 68, 68, 0.15)",
+              color: "#ef4444",
+              fontSize: "13px",
+              marginBottom: "24px",
+              borderRadius: "8px",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <label
               style={{
-                padding: "12px 16px",
-                background: "rgba(239, 68, 68, 0.05)",
-                border: "1px solid rgba(239, 68, 68, 0.15)",
-                color: "#ef4444",
-                fontSize: "13px",
-                marginBottom: "24px",
-                borderRadius: "0px",
+                fontSize: "10px",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+                color: "var(--text-secondary)",
+                fontWeight: 600,
               }}
             >
-              {error}
-            </div>
-          )}
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@store.com"
+              required
+              disabled={loading}
+              className="login-input"
+            />
+          </div>
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label
-                style={{
-                  fontSize: "10px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.15em",
-                  color: "var(--text-secondary)",
-                  fontWeight: 600,
-                }}
-              >
-                Email Address
-              </label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <label
+              style={{
+                fontSize: "10px",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+                color: "var(--text-secondary)",
+                fontWeight: 600,
+              }}
+            >
+              Password
+            </label>
+            <div style={{ position: "relative" }}>
               <input
-                type="email"
-                name="email"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@store.com"
-                required
-                disabled={loading}
-                style={{
-                  padding: "12px 16px",
-                  border: "1px solid var(--border)",
-                  background: "var(--bg)",
-                  color: "var(--text-primary)",
-                  fontSize: "13px",
-                  outline: "none",
-                  borderRadius: "0px",
-                  transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "var(--text-primary)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label
-                style={{
-                  fontSize: "10px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.15em",
-                  color: "var(--text-secondary)",
-                  fontWeight: 600,
-                }}
-              >
-                Password
-              </label>
-              <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 autoComplete="current-password"
                 value={password}
@@ -213,70 +290,72 @@ export default function LoginPage() {
                 placeholder="Enter your password"
                 required
                 disabled={loading}
-                style={{
-                  padding: "12px 16px",
-                  border: "1px solid var(--border)",
-                  background: "var(--bg)",
-                  color: "var(--text-primary)",
-                  fontSize: "13px",
-                  outline: "none",
-                  borderRadius: "0px",
-                  transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "var(--text-primary)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                }}
+                className="login-input"
+                style={{ paddingRight: "64px" }}
               />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                padding: "14px",
-                background: "var(--text-primary)",
-                color: "var(--bg)",
-                border: "none",
-                borderRadius: "0px",
-                fontWeight: 500,
-                cursor: loading ? "not-allowed" : "pointer",
-                fontSize: "11px",
-                textTransform: "uppercase",
-                letterSpacing: "0.2em",
-                marginTop: "16px",
-                opacity: loading ? 0.7 : 1,
-                boxShadow: "none",
-                transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) e.currentTarget.style.opacity = "0.8";
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) e.currentTarget.style.opacity = "1";
-              }}
-            >
-              {loading ? "Verifying..." : "Log In"}
-            </button>
-          </form>
-
-          <div style={{ textAlign: "center", marginTop: "32px" }}>
-            <span style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)" }}>
-              Don't have a store yet?{" "}
-              <Link
-                href="/onboard"
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
                 style={{
-                  color: "var(--text-primary)",
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-secondary)",
+                  fontSize: "10px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
                   fontWeight: 600,
-                  textDecoration: "underline",
-                  textUnderlineOffset: "4px",
+                  cursor: "pointer",
+                  padding: "4px",
                 }}
               >
-                Get Started
-              </Link>
-            </span>
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "12px" }}>
+            <button type="submit" disabled={loading} className="login-button">
+              {loading && <div className="spinner" />}
+              {loading ? "Signing in..." : "Log In"}
+            </button>
+            
+            {/* Security Badge */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                marginTop: "20px",
+                color: "var(--text-secondary)",
+                fontSize: "11px",
+                opacity: 0.75,
+              }}
+            >
+              <span>🔒 Secure login powered by JWT authentication</span>
+            </div>
+          </div>
+        </form>
+
+        <div style={{ textAlign: "center", marginTop: "40px" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+            <span>New to Bazaar?</span>
+            <br />
+            <Link
+              href="/onboard"
+              style={{
+                color: "var(--text-primary)",
+                fontWeight: 600,
+                textDecoration: "underline",
+                textUnderlineOffset: "4px",
+              }}
+            >
+              Create your store and start selling in minutes
+            </Link>
           </div>
         </div>
       </div>

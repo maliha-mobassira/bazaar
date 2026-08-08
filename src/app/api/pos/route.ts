@@ -8,7 +8,7 @@ import { products } from "@/db/schema/product";
 import { eq, sql } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
-  const roleCheck = requireRole(req, ["admin", "cashier"]);
+  const roleCheck = requireRole(req, ["admin", "manager", "cashier"]);
   if (roleCheck) return roleCheck;
 
   const tenantId = req.headers.get("x-tenant-id");

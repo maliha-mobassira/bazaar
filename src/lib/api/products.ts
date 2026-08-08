@@ -7,6 +7,7 @@ export interface Product {
   price: string;
   image?: string;
   category?: string;
+  quantity?: number | null;
   createdAt: string;
 }
 
@@ -44,5 +45,19 @@ export async function devImportProducts(): Promise<{
     totalGenerated: number;
   }>("/api/dev/import", {
     method: "POST",
+  });
+}
+
+export async function updateProduct(
+  id: string,
+  name: string,
+  sku: string,
+  price: string,
+  image?: string,
+  category?: string
+): Promise<Product[]> {
+  return apiRequest<Product[]>("/api/products", {
+    method: "PUT",
+    body: JSON.stringify({ id, name, sku, price, image, category }),
   });
 }

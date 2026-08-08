@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { withTenant } from "@/lib/db";
 import { sales } from "@/db/schema/sale";
 import { sql } from "drizzle-orm";
+import { requireRole } from "@/lib/requireRole";
 
 export async function GET(req: NextRequest) {
+  const roleCheck = requireRole(req, ["admin"]);
+  if (roleCheck) return roleCheck;
+
   const tenantId = req.headers.get("x-tenant-id");
 
   if (!tenantId) {
