@@ -2,8 +2,15 @@ import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "@/db/schema";
 
+const isCloudDb = 
+  process.env.NODE_ENV === "production" || 
+  process.env.DATABASE_URL?.includes("render.com") || 
+  process.env.DATABASE_URL?.includes("neon.tech") ||
+  process.env.DATABASE_URL?.includes("sslmode=");
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: isCloudDb ? { rejectUnauthorized: false } : undefined,
 });
 
 export const db = drizzle(pool, { schema });

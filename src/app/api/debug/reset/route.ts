@@ -35,7 +35,6 @@ export async function GET() {
       const [tenant] = await tx
         .insert(tenants)
         .values({
-          id: "ffc31b28-3500-4904-9042-90ffbcb47dbd",
           name: "Bazaar Retail Group",
         })
         .returning();
@@ -44,7 +43,6 @@ export async function GET() {
       const [admin] = await tx
         .insert(users)
         .values({
-          id: "ca4c9c5b-0951-430e-b8d6-c275759142a5",
           tenantId: tenant.id,
           email: "admin@bazaar.com",
           passwordHash,
@@ -56,7 +54,6 @@ export async function GET() {
       const [cashier] = await tx
         .insert(users)
         .values({
-          id: "a21f124f-e99c-4307-803e-5c4d25a54744",
           tenantId: tenant.id,
           email: "cashier@bazaar.com",
           passwordHash,
@@ -67,7 +64,6 @@ export async function GET() {
       // 5. Insert test products
       const productsToSeed = [
         {
-          id: "71d22837-87d0-484c-80b8-fca79641a3a9",
           name: "Premium Blend Coffee",
           sku: "COFFEE-PREM-12",
           price: "14.99",
@@ -76,7 +72,6 @@ export async function GET() {
           quantity: 50,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b1",
           name: "Organic Green Tea",
           sku: "TEA-ORGA-08",
           price: "8.99",
@@ -85,7 +80,6 @@ export async function GET() {
           quantity: 40,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b2",
           name: "Wireless Bluetooth Earbuds",
           sku: "EAR-WIRE-BT",
           price: "79.99",
@@ -94,7 +88,6 @@ export async function GET() {
           quantity: 25,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b3",
           name: "Minimalist Leather Wallet",
           sku: "WL-MIN-LTHR",
           price: "45.00",
@@ -103,7 +96,6 @@ export async function GET() {
           quantity: 30,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b4",
           name: "Stainless Steel Water Bottle",
           sku: "BT-SST-24",
           price: "24.99",
@@ -112,7 +104,6 @@ export async function GET() {
           quantity: 60,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b5",
           name: "Hydrating Face Serum",
           sku: "SRM-HYD-50",
           price: "29.90",
@@ -121,7 +112,6 @@ export async function GET() {
           quantity: 45,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b6",
           name: "Ergonomic Desk Chair",
           sku: "CH-ERG-DK",
           price: "189.00",
@@ -130,7 +120,6 @@ export async function GET() {
           quantity: 10,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b7",
           name: "Mechanical Keyboard",
           sku: "KB-MECH-RGB",
           price: "109.99",
@@ -139,7 +128,6 @@ export async function GET() {
           quantity: 15,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b8",
           name: "Organic Cotton T-Shirt",
           sku: "TS-COT-ORG",
           price: "19.99",
@@ -148,7 +136,6 @@ export async function GET() {
           quantity: 80,
         },
         {
-          id: "92d22837-87d0-484c-80b8-fca79641a3b9",
           name: "Aromatherapy Reed Diffuser",
           sku: "DF-AROMA-RD",
           price: "18.50",
@@ -165,7 +152,6 @@ export async function GET() {
         const [prod] = await tx
           .insert(products)
           .values({
-            id: p.id,
             tenantId: tenant.id,
             name: p.name,
             sku: p.sku,
