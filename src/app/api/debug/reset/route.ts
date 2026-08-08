@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import { db } from "@/lib/db";
+import { db, ensureTablesExist } from "@/lib/db";
 import { tenants, users, products, inventory, sales, saleItems } from "@/db/schema";
 import fs from "fs";
 import path from "path";
 
 export async function GET() {
   try {
+    await ensureTablesExist();
     // Delete duplicate root page.tsx to prevent Next.js page default export compile error
     const rootPagePath = path.join(process.cwd(), "src/app/page.tsx");
     if (fs.existsSync(rootPagePath)) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureTablesExist } from "@/lib/db";
 import { users } from "@/db/schema/user";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req: NextRequest) {
     try {
+        await ensureTablesExist();
+
         const body = await req.json();
         const { email, password } = body;
 
@@ -38,6 +40,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        const jwtSecret = process.env.JWT_SECRET || "bazaar-default-jwt-secret-key-2026";
+
         const token = jwt.sign(
             {
                 userId: user.id,
@@ -45,15 +49,15 @@ export async function POST(req: NextRequest) {
                 role: user.role,
                 email: user.email,
             },
-            process.env.JWT_SECRET!,
+            jwtSecret,
             { expiresIn: "1d" }
         );
 
         return NextResponse.json({ token });
-    } catch (error) {
-        console.error(error);
+    } catch (error: any) {
+        console.error("Login route error:", error);
         return NextResponse.json(
-            { error: "Login failed" },
+            { error: error?.message || "Login failed" },
             { status: 500 }
         );
     }

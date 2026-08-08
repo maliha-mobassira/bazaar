@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import { db } from "@/lib/db";
+import { db, ensureTablesExist } from "@/lib/db";
 import { tenants, users } from "@/db/schema";
 
 export async function POST(request: Request) {
   try {
+    await ensureTablesExist();
     const body = await request.json();
     console.log("BODY RECEIVED:", body);
     const { tenantName, businessName, email, password } = body;
