@@ -724,7 +724,7 @@ export default function CheckoutPage() {
       {isReceiptOpen && lastSaleDetails && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.3)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
           <div style={{ width: "100%", maxWidth: "420px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "40px", boxShadow: "0 24px 64px rgba(0,0,0,0.12)" }}>
-            <div style={{ textHeading: "center", borderBottom: "1px solid var(--border)", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}>
+            <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}>
               <Logo size={24} />
               <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "28px", fontWeight: 400, fontStyle: "italic", margin: "12px 0 4px 0" }}>
                 Sale Completed

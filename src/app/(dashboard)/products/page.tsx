@@ -759,7 +759,7 @@ export default function ProductsPage() {
                   {p.image ? (
                     <img src={p.image} alt={p.name} className="product-img" />
                   ) : (
-                    <div style={{ width: "100%", height: "100%", background: "var(--accent-light)", display: "flex", alignItems: "center", justifyCenter: "center", fontSize: "28px" }}>📦</div>
+                    <div style={{ width: "100%", height: "100%", background: "var(--accent-light)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px" }}>📦</div>
                   )}
                 </div>
 
