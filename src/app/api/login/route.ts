@@ -17,8 +17,9 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        const cleanEmail = email.toLowerCase().trim();
         const user = await db.query.users.findFirst({
-            where: eq(users.email, email),
+            where: eq(users.email, cleanEmail),
         });
 
         if (!user) {
