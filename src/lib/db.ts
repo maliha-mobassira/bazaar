@@ -21,7 +21,11 @@ let tablesEnsured = false;
 export async function ensureTablesExist() {
   if (tablesEnsured) return;
   try {
-    await db.execute(sql`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+    try {
+      await db.execute(sql`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+    } catch (extErr) {
+      console.log("Extension pgcrypto check ignored (built-in in Postgres 13+).");
+    }
 
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS "tenants" (

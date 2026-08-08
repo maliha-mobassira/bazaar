@@ -194,6 +194,7 @@ export async function GET() {
     });
   } catch (error: any) {
     console.error("Database seed error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errorDetails = error?.message || error?.detail || error?.hint || (typeof error === "object" ? JSON.stringify(error) : String(error)) || "Database reset failed";
+    return NextResponse.json({ error: errorDetails }, { status: 500 });
   }
 }
