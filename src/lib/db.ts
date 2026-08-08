@@ -21,15 +21,17 @@ let tablesEnsured = false;
 export async function ensureTablesExist() {
   if (tablesEnsured) return;
   try {
-    await db.execute(sql`
-      CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    await db.execute(sql`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
 
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS "tenants" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "name" text NOT NULL,
         "created_at" timestamp DEFAULT now() NOT NULL
       );
+    `);
 
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS "users" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
@@ -38,7 +40,9 @@ export async function ensureTablesExist() {
         "role" text NOT NULL,
         "created_at" timestamp DEFAULT now() NOT NULL
       );
+    `);
 
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS "products" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
@@ -49,7 +53,9 @@ export async function ensureTablesExist() {
         "category" text,
         "created_at" timestamp DEFAULT now() NOT NULL
       );
+    `);
 
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS "inventory" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
@@ -57,7 +63,9 @@ export async function ensureTablesExist() {
         "quantity" integer DEFAULT 0 NOT NULL,
         "created_at" timestamp DEFAULT now() NOT NULL
       );
+    `);
 
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS "sales" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
@@ -68,7 +76,9 @@ export async function ensureTablesExist() {
         "customer_phone" text,
         "created_at" timestamp DEFAULT now() NOT NULL
       );
+    `);
 
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS "sale_items" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
@@ -78,6 +88,7 @@ export async function ensureTablesExist() {
         "price_at_sale" numeric(10,2) NOT NULL
       );
     `);
+
     tablesEnsured = true;
   } catch (err) {
     console.error("Error ensuring database tables exist:", err);
