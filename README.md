@@ -6,17 +6,55 @@ Bazaar is a production-ready, offline-first Point of Sale (POS) and Multi-Tenant
 
 ---
 
-## 📸 Preview & Screenshots
+## 🛡️ Admin Role Walkthrough & Screenshot Showcase
 
-Add your app screenshots into the [`public/screenshots/`](public/screenshots/README.md) folder to display them here:
+Here is a step-by-step visual demonstration of what the **Admin User (`admin@bazaar.com`)** experiences inside Bazaar—from initial store setup to real-time checkout processing, analytics reporting, and invoice management.
 
-| Admin Analytics Dashboard | POS Checkout Terminal |
-| :---: | :---: |
-| ![Admin Dashboard](public/screenshots/admin_dashboard.png) | ![POS Checkout](public/screenshots/pos_checkout.png) |
+---
 
-| Invoices & Sales Management | High-Fidelity Printable Invoice |
-| :---: | :---: |
-| ![Invoices List](public/screenshots/invoices_history.png) | ![Printable Invoice](public/screenshots/printable_invoice.png) |
+### 1. Admin System Control Center (Initial State)
+![Admin Dashboard Initial](public/screenshots/admin_dashboard_initial.png)
+> **What is happening here:**
+> - The **Admin Dashboard** initializes displaying real-time operational status (`Operational`, `2 cashiers online`, register opened at `9:00 AM`).
+> - Metrics display initial total revenue (**$0.00**) and 0 transactions prior to store activity.
+> - Indicators track overall **Stock Health (92%)**, **Sales Goals (78%)**, active products count (10 items), and live **Inventory Alerts** (3 items low in stock).
+
+---
+
+### 2. POS Checkout Terminal & Active Order Processing
+![Admin POS Checkout](public/screenshots/admin_pos_checkout.png)
+> **What is happening here:**
+> - The Admin accesses the **Checkout Terminal (`/pos`)** to ring up a retail transaction.
+> - The product grid displays live stock pills (*In Stock*, *Low Stock* warnings) with image previews across categories (*Groceries, Electronics, Apparel, Accessories, Furniture*).
+> - The **Order Summary** side panel displays 10 items in cart (including Ergonomic Desk Chairs & Mechanical Keyboards) calculating a **Total Due of $1,182.46**.
+
+---
+
+### 3. Real-Time Dashboard Update (Post-Checkout)
+![Admin Dashboard Active](public/screenshots/admin_dashboard_active.png)
+> **What is happening here:**
+> - Immediately after completing the checkout sale, the Admin Dashboard automatically updates via database reactivity.
+> - Today's revenue jumps to **$1,182.46** for **1 order**.
+> - The **Live Operations Feed** logs `"Sale completed ($1182.46) 1 min ago"`.
+> - The **Recent Checkout Log** records the exact PostgreSQL transaction UUID (`b85a7668-b856-4c0a...`) at `09:21 PM`.
+
+---
+
+### 4. Business Intelligence & Financial Analytics
+![Admin Reports](public/screenshots/admin_reports.png)
+> **What is happening here:**
+> - The Admin opens **Reports & Analytics (`/reports`)** for executive financial oversight.
+> - Tracks revenue trends, average ticket size, and volume across flexible time filters (`Today`, `7 Days`, `30 Days`, `All Time`).
+> - Provides a **Sales by Category** percentage breakdown (*Groceries 35%, Electronics 28%, Apparel 18%, Beauty 12%, Furniture 7%*) and a **Top Performing Products** leaderboard ranked by lifetime sales revenue (*Wireless Bluetooth Earbuds: $7,519.06*, *Mechanical Keyboard: $6,819.38*).
+
+---
+
+### 5. Enterprise Invoices & Tax Receipts Hub
+![Admin Invoices](public/screenshots/admin_invoices.png)
+> **What is happening here:**
+> - The Admin visits **Invoices & Receipts (`/invoices`)** to manage customer transactions and issue tax documents.
+> - Features executive stat cards (*Total Invoices, Revenue, Units Delivered, Avg Basket Size*).
+> - Offers filter tabs (*All Invoices*, *Today*, *High Value $100+*), search bar by customer name/phone/invoice ID, and action triggers to open printable A4 / 80mm thermal tax invoice modals.
 
 ---
 
