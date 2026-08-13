@@ -83,7 +83,22 @@ Here is what the **Store Manager (`manager@bazaar.com`)** sees and can perform i
 
 ---
 
-## 👥 Role-Based User Testing Guide (Who Does What)
+## 🛒 Cashier Role Walkthrough & Screenshot Showcase
+
+Here is what the **Cashier User (`cashier@bazaar.com`)** sees and can perform inside Bazaar:
+
+---
+
+### 1. Cashier Front-of-House POS Terminal (`ROLE: CASHIER`)
+![Cashier POS Terminal](public/screenshots/cashier_pos_terminal.png)
+> **What is happening here & RBAC Enforcement:**
+> - **Front-of-House Terminal**: Displays `ROLE: CASHIER` top-right. Cashiers are automatically routed directly to the checkout interface (`/pos`) for fast register operations.
+> - **Streamlined Register Workflow**: Cashiers browse products (*Minimalist Leather Wallet, Stainless Steel Water Bottle, Hydrating Face Serum, Organic Green Tea, Wireless Earbuds, Mechanical Keyboards, Ergonomic Desk Chairs*), view live inventory badges (*In Stock (58)*), search register items, apply discounts, tag customer names, and complete cash/credit sales.
+> - **Restricted Access**: Cashiers cannot access executive revenue dashboards (`/`), master product catalog editing (`/products`), inventory stock overrides (`/inventory`), or financial analytics reports (`/reports`).
+
+---
+
+## 👥 Role-Based User Testing Guide (Who Does What Summary)
 
 Bazaar enforces strict **Role-Based Access Control (RBAC)** across API endpoints and dashboard navigation. Use the credentials below to log in or use the top-right **"Simulate Role"** switcher in the sidebar to test each user perspective:
 
