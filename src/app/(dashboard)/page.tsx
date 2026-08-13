@@ -302,6 +302,24 @@ export default function DashboardHome() {
         .quick-action-link:hover {
           background: var(--bg);
         }
+        @media (max-width: 900px) {
+          .bento-main-grid {
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .bento-row-grid {
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .bento-card {
+            grid-column: span 12 !important;
+            height: auto !important;
+            min-height: 180px;
+          }
+          .dashboard-header-h1 {
+            font-size: 28px !important;
+          }
+        }
       `}</style>
 
       {/* Header bar */}

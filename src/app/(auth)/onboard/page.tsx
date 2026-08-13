@@ -91,13 +91,21 @@ export default function OnboardPage() {
           padding: "24px",
         }}
       >
+        <style>{`
+          @media (max-width: 480px) {
+            .onboard-card {
+              padding: 36px 20px !important;
+            }
+          }
+        `}</style>
         <div
+          className="onboard-card"
           style={{
             width: "100%",
             maxWidth: "460px",
             background: "var(--surface)",
             border: "1px solid var(--border)",
-            borderRadius: "0px", // Architectural sharp corners
+            borderRadius: "12px",
             padding: "56px 48px",
             boxShadow: "none",
             transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",

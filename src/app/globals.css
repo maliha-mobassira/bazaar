@@ -4,75 +4,154 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root {
   /* Nude / Sand & Espresso Light Theme */
   --bg: #F1EDE6;
-  /* Pure Alabaster Chalk */
   --surface: #EBE3DB;
-  /* Off-white Linen / Warm Creamy Alabaster */
   --card: #FAF9F6;
 
   --text-primary: #1c1613;
-  /* Deep Espresso Brown (Elegantly soft dark text) */
   --text-secondary: #A48374;
-  /* Muted Dusty Mauve / Warm Taupe */
 
   --border: rgba(164, 131, 116, 0.22);
-  /* Warm Taupe border */
   --accent: #3A2D28;
-  /* Deep Espresso high contrast buttons */
   --accent-light: rgba(164, 131, 116, 0.08);
   --accent-hover: #503F38;
 
   --sand-caramel: #CBAD8D;
-  /* Latte Caramel */
   --bg-image-opacity: 0.06;
+  
+  --glass-bg: rgba(250, 249, 246, 0.85);
+  --glass-border: rgba(164, 131, 116, 0.25);
+  --shadow-sm: 0 2px 8px rgba(28, 22, 19, 0.04);
+  --shadow-md: 0 8px 24px rgba(28, 22, 19, 0.08);
+  --shadow-lg: 0 16px 48px rgba(28, 22, 19, 0.12);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 [data-theme="dark"] {
-  /* Warm Velvet Espresso Dark Theme (No Greens, using Espresso & Latte Caramel) */
-  --bg: #3A2D28;
-  /* Deep Espresso Brown backdrop */
-  --surface: #2E2420;
-  /* Denser dark espresso card surface */
-  --card: #342924;
+  /* Warm Velvet Espresso Dark Theme */
+  --bg: #271e1a;
+  --surface: #1f1815;
+  --card: #2f2520;
 
   --text-primary: #F1EDE6;
-  /* Ivory Alabaster Text */
   --text-secondary: #CBAD8D;
-  /* Latte Caramel Secondary Text */
 
-  --border: rgba(241, 237, 230, 0.18);
-  /* Ivory line borders */
+  --border: rgba(241, 237, 230, 0.14);
   --accent: #CBAD8D;
-  /* Latte Caramel Accent highlights */
   --accent-light: rgba(203, 173, 141, 0.12);
   --accent-hover: #D8BF9F;
 
   --bg-image-opacity: 0.04;
+  
+  --glass-bg: rgba(47, 37, 32, 0.85);
+  --glass-border: rgba(241, 237, 230, 0.18);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+html, body {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 body {
   background: var(--bg);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  transition: background 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background 0.5s ease, color 0.5s ease;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2,
-h3,
-h4,
-.serif-font {
-  font-family: 'Instrument Serif', serif;
+h1, h2, h3, h4, .serif-font {
+  font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.02em;
 }
 
-/* Luxury transitions */
-.smooth-transition {
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+/* Touch-friendly buttons and inputs */
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+button {
+  min-height: 40px;
+  touch-action: manipulation;
+}
+
+/* Mobile responsive utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Responsive Table Wrapper */
+.responsive-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Responsive media breakpoints helper classes */
+@media (max-width: 768px) {
+  h1 { font-size: 1.85rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.2rem !important; }
 }

@@ -106,6 +106,13 @@ export default function LoginPage() {
           }
         }
 
+        @media (max-width: 480px) {
+          .login-card {
+            padding: 36px 20px !important;
+            border-radius: 12px !important;
+          }
+        }
+
         .login-input {
           width: 100%;
           padding: 14px 16px;

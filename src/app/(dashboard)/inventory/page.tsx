@@ -546,7 +546,7 @@ export default function InventoryPage() {
           <button style={{ marginTop: "16px" }} className="pill active" onClick={() => { setSearch(""); setSelectedCategory("All"); setSelectedStatus("All"); }}>Reset Filters</button>
         </div>
       ) : (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", overflowX: "auto" }}>
+        <div className="responsive-table-container" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "13px" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--bg)" }}>

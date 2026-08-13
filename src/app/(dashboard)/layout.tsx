@@ -29,9 +29,9 @@ export default function DashboardLayout({
       } else {
         // Enforce role-based path access
         const allowedPaths: Record<string, string[]> = {
-          admin: ["/", "/products", "/inventory", "/reports", "/pos"],
-          manager: ["/", "/inventory", "/pos"],
-          cashier: ["/pos"],
+          admin: ["/", "/products", "/inventory", "/invoices", "/reports", "/pos"],
+          manager: ["/", "/inventory", "/invoices", "/pos"],
+          cashier: ["/pos", "/invoices"],
         };
 
         const userAllowedPaths = allowedPaths[user.role] || [];
@@ -99,6 +99,7 @@ export default function DashboardLayout({
     { name: "Dashboard", href: "/", allowedRoles: ["admin", "manager"], icon: "📊" },
     { name: "Products", href: "/products", allowedRoles: ["admin"], icon: "📦" },
     { name: "Inventory", href: "/inventory", allowedRoles: ["admin", "manager"], icon: "📋" },
+    { name: "Invoices", href: "/invoices", allowedRoles: ["admin", "manager", "cashier"], icon: "📜" },
     { name: "Reports", href: "/reports", allowedRoles: ["admin"], icon: "📈" },
     { name: "Checkout", href: "/pos", allowedRoles: ["admin", "manager", "cashier"], icon: "🛒" },
   ].filter((item) => item.allowedRoles.includes(user.role));
