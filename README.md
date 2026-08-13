@@ -58,6 +58,31 @@ Here is a step-by-step visual demonstration of what the **Admin User (`admin@baz
 
 ---
 
+## 👔 Manager Role Walkthrough & Screenshot Showcase
+
+Here is what the **Store Manager (`manager@bazaar.com`)** sees and can perform inside Bazaar:
+
+---
+
+### 1. Manager Control Center (`ROLE: MANAGER`)
+![Manager Dashboard](public/screenshots/manager_dashboard.png)
+> **What is happening here & RBAC Enforcement:**
+> - **Active Navigation Links**: The sidebar explicitly displays `ROLE: MANAGER` with access restricted to **Dashboard**, **Inventory**, **Invoices**, and **Checkout**.
+> - **Hidden Confidential Sections**: **Products** (catalog master editing) and **Reports** (executive profit analytics) are automatically hidden from the navigation menu to protect store financial data.
+> - **Operational Actions**: Under quick actions, **"Manage Catalog"** is hidden/disabled, allowing the Manager to perform store operations: **"Check Stock Count"** and **"Launch POS Terminal"**.
+> - **Operational Overview**: Manager monitors real-time sales revenue (**$1,182.46**), store stock health (92%), inventory low-stock alerts, and recent checkout transactions.
+
+---
+
+### 2. Manager Customer Invoice & Tax Receipt View
+![Manager Invoice Receipt](public/screenshots/manager_invoice_receipt.png)
+> **What is happening here:**
+> - The Manager inspects an official customer tax receipt (`INV-B05A7660`) issued on `August 13, 2026 at 09:21 PM`.
+> - Reviews customer billing details (*Walk-in Customer*), issuing cashier/terminal (`admin@bazaar.com`), payment channel (*Credit / Digital POS*), and total items fulfilled (10 units total).
+> - Manager can print or export the receipt for customer returns, exchanges, or store audit verification.
+
+---
+
 ## 👥 Role-Based User Testing Guide (Who Does What)
 
 Bazaar enforces strict **Role-Based Access Control (RBAC)** across API endpoints and dashboard navigation. Use the credentials below to log in or use the top-right **"Simulate Role"** switcher in the sidebar to test each user perspective:
