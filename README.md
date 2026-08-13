@@ -2,139 +2,85 @@
 
 Bazaar is a production-ready, offline-first Point of Sale (POS) and Multi-Tenant Retail Management SaaS platform built to empower retail stores, multi-branch chains, and SMEs with real-time stock control, printable tax invoices, sales analytics, and strict database-level multi-tenancy.
 
-[🔗 Live Demo](https://bazaar-pos.vercel.app) <!-- Replace with your deployed URL if available -->
+[🔗 **Live Demo Application**](https://bazaar-pfjm.onrender.com)
 
 ---
 
-## 🛡️ Admin Role Walkthrough & Screenshot Showcase
+## 🔑 Quick Login Credentials (Role-Based Access)
 
-Here is a step-by-step visual demonstration of what the **Admin User (`admin@bazaar.com`)** experiences inside Bazaar—from initial store setup to real-time checkout processing, analytics reporting, and invoice management.
+Test the live application or your local environment using any of the seeded user roles below:
 
----
-
-### 1. Admin System Control Center (Initial State)
-![Admin Dashboard Initial](public/screenshots/admin_dashboard_initial.png)
-> **What is happening here:**
-> - The **Admin Dashboard** initializes displaying real-time operational status (`Operational`, `2 cashiers online`, register opened at `9:00 AM`).
-> - Metrics display initial total revenue (**$0.00**) and 0 transactions prior to store activity.
-> - Indicators track overall **Stock Health (92%)**, **Sales Goals (78%)**, active products count (10 items), and live **Inventory Alerts** (3 items low in stock).
+| Role | Email Address | Password | Allowed Access | Restricted Areas |
+| :--- | :--- | :--- | :--- | :--- |
+| **🛡️ Admin** | `admin@bazaar.com` | `securepassword123` | Full System Access (All pages) | *None* |
+| **👔 Manager** | `manager@bazaar.com` | `securepassword123` | Dashboard, Inventory, Invoices, POS | Product Editing, Financial Reports |
+| **🛒 Cashier** | `cashier@bazaar.com` | `securepassword123` | POS Terminal, Invoices Search | Dashboard, Product Editing, Inventory, Reports |
 
 ---
 
-### 2. POS Checkout Terminal & Active Order Processing
-![Admin POS Checkout](public/screenshots/admin_pos_checkout.png)
-> **What is happening here:**
-> - The Admin accesses the **Checkout Terminal (`/pos`)** to ring up a retail transaction.
-> - The product grid displays live stock pills (*In Stock*, *Low Stock* warnings) with image previews across categories (*Groceries, Electronics, Apparel, Accessories, Furniture*).
-> - The **Order Summary** side panel displays 10 items in cart (including Ergonomic Desk Chairs & Mechanical Keyboards) calculating a **Total Due of $1,182.46**.
+## 📸 Role-Based Visual Walkthrough
+
+### 🛡️ Admin Role Showcase (`admin@bazaar.com`)
+
+| 1. System Control Center (Initial State) | 2. Real-Time Dashboard Update (Post-Checkout) |
+| :---: | :---: |
+| <img src="public/screenshots/admin_dashboard_initial.png" width="480" alt="Admin Dashboard Initial" /> | <img src="public/screenshots/admin_dashboard_active.png" width="480" alt="Admin Dashboard Active" /> |
+| *Displays real-time revenue ($0.00), stock health (92%), and low-stock alert badges prior to orders.* | *Dynamically updates revenue to **$1,182.46**, logs live checkout transactions and PostgreSQL transaction UUIDs.* |
+
+| 3. POS Checkout Register | 4. Business Intelligence Reports |
+| :---: | :---: |
+| <img src="public/screenshots/admin_pos_checkout.png" width="480" alt="Admin POS Checkout" /> | <img src="public/screenshots/admin_reports.png" width="480" alt="Admin Reports" /> |
+| *Product catalog register grid with stock pills and 10-item order cart totaling **$1,182.46**.* | *Revenue performance graphs, category breakdown (Groceries 35%, Electronics 28%), and top product sales rankings.* |
+
+| 5. Enterprise Invoices & Tax Receipts Hub |
+| :---: |
+| <img src="public/screenshots/admin_invoices.png" width="560" alt="Admin Invoices" /> |
+| *Invoices dashboard featuring stat cards, search filters, and triggers for printable A4 / 80mm thermal receipts.* |
 
 ---
 
-### 3. Real-Time Dashboard Update (Post-Checkout)
-![Admin Dashboard Active](public/screenshots/admin_dashboard_active.png)
-> **What is happening here:**
-> - Immediately after completing the checkout sale, the Admin Dashboard automatically updates via database reactivity.
-> - Today's revenue jumps to **$1,182.46** for **1 order**.
-> - The **Live Operations Feed** logs `"Sale completed ($1182.46) 1 min ago"`.
-> - The **Recent Checkout Log** records the exact PostgreSQL transaction UUID (`b85a7668-b856-4c0a...`) at `09:21 PM`.
+### 👔 Manager Role Showcase (`manager@bazaar.com`)
+
+| 1. Manager Control Center (`ROLE: MANAGER`) | 2. Customer Tax Invoice Receipt Detail |
+| :---: | :---: |
+| <img src="public/screenshots/manager_dashboard.png" width="480" alt="Manager Dashboard" /> | <img src="public/screenshots/manager_invoice_receipt.png" width="480" alt="Manager Tax Receipt" /> |
+| *Shows `ROLE: MANAGER` sidebar access (Products & Reports hidden; Manage Catalog disabled).* | *Customer tax invoice modal (`INV-B05A7660`) displaying billing metadata, cashier ID, and line item counts.* |
 
 ---
 
-### 4. Business Intelligence & Financial Analytics
-![Admin Reports](public/screenshots/admin_reports.png)
-> **What is happening here:**
-> - The Admin opens **Reports & Analytics (`/reports`)** for executive financial oversight.
-> - Tracks revenue trends, average ticket size, and volume across flexible time filters (`Today`, `7 Days`, `30 Days`, `All Time`).
-> - Provides a **Sales by Category** percentage breakdown (*Groceries 35%, Electronics 28%, Apparel 18%, Beauty 12%, Furniture 7%*) and a **Top Performing Products** leaderboard ranked by lifetime sales revenue (*Wireless Bluetooth Earbuds: $7,519.06*, *Mechanical Keyboard: $6,819.38*).
+### 🛒 Cashier Role Showcase (`cashier@bazaar.com`)
+
+| Cashier Front-of-House POS Terminal (`ROLE: CASHIER`) |
+| :---: |
+| <img src="public/screenshots/cashier_pos_terminal.png" width="560" alt="Cashier POS Terminal" /> |
+| *Front-of-house register (`ROLE: CASHIER`). Automatically routed directly to checkout terminal (`/pos`) for fast order processing, item searching, and receipt issuance.* |
 
 ---
 
-### 5. Enterprise Invoices & Tax Receipts Hub
-![Admin Invoices](public/screenshots/admin_invoices.png)
-> **What is happening here:**
-> - The Admin visits **Invoices & Receipts (`/invoices`)** to manage customer transactions and issue tax documents.
-> - Features executive stat cards (*Total Invoices, Revenue, Units Delivered, Avg Basket Size*).
-> - Offers filter tabs (*All Invoices*, *Today*, *High Value $100+*), search bar by customer name/phone/invoice ID, and action triggers to open printable A4 / 80mm thermal tax invoice modals.
+## 👥 Role-Based Access Control (RBAC Breakdown)
 
----
+Bazaar enforces database and middleware level **Role-Based Access Control (RBAC)**:
 
-## 👔 Manager Role Walkthrough & Screenshot Showcase
+1. **🛡️ Admin User (`admin@bazaar.com`)**:
+   - ✅ View full financial analytics and sales performance on **Dashboard** (`/`).
+   - ✅ Add, edit, and delete items in **Product Catalog** (`/products`).
+   - ✅ Monitor stock levels and perform manual inventory adjustments in **Inventory** (`/inventory`).
+   - ✅ Search, filter, print, and export all receipts in **Invoices** (`/invoices`).
+   - ✅ Access profit-margin analytics in **Reports** (`/reports`).
+   - ✅ Process sales in **POS Terminal** (`/pos`).
 
-Here is what the **Store Manager (`manager@bazaar.com`)** sees and can perform inside Bazaar:
+2. **👔 Store Manager User (`manager@bazaar.com`)**:
+   - ✅ View high-level store sales dashboard (`/`).
+   - ✅ Oversee stock quantities in **Inventory** (`/inventory`).
+   - ✅ Search and print customer tax receipts in **Invoices** (`/invoices`).
+   - ✅ Ring up customer purchases in **POS Terminal** (`/pos`).
+   - ❌ *Restricted*: Cannot edit master catalog prices (`/products`) or access financial reports (`/reports`).
 
----
-
-### 1. Manager Control Center (`ROLE: MANAGER`)
-![Manager Dashboard](public/screenshots/manager_dashboard.png)
-> **What is happening here & RBAC Enforcement:**
-> - **Active Navigation Links**: The sidebar explicitly displays `ROLE: MANAGER` with access restricted to **Dashboard**, **Inventory**, **Invoices**, and **Checkout**.
-> - **Hidden Confidential Sections**: **Products** (catalog master editing) and **Reports** (executive profit analytics) are automatically hidden from the navigation menu to protect store financial data.
-> - **Operational Actions**: Under quick actions, **"Manage Catalog"** is hidden/disabled, allowing the Manager to perform store operations: **"Check Stock Count"** and **"Launch POS Terminal"**.
-> - **Operational Overview**: Manager monitors real-time sales revenue (**$1,182.46**), store stock health (92%), inventory low-stock alerts, and recent checkout transactions.
-
----
-
-### 2. Manager Customer Invoice & Tax Receipt View
-![Manager Invoice Receipt](public/screenshots/manager_invoice_receipt.png)
-> **What is happening here:**
-> - The Manager inspects an official customer tax receipt (`INV-B05A7660`) issued on `August 13, 2026 at 09:21 PM`.
-> - Reviews customer billing details (*Walk-in Customer*), issuing cashier/terminal (`admin@bazaar.com`), payment channel (*Credit / Digital POS*), and total items fulfilled (10 units total).
-> - Manager can print or export the receipt for customer returns, exchanges, or store audit verification.
-
----
-
-## 🛒 Cashier Role Walkthrough & Screenshot Showcase
-
-Here is what the **Cashier User (`cashier@bazaar.com`)** sees and can perform inside Bazaar:
-
----
-
-### 1. Cashier Front-of-House POS Terminal (`ROLE: CASHIER`)
-![Cashier POS Terminal](public/screenshots/cashier_pos_terminal.png)
-> **What is happening here & RBAC Enforcement:**
-> - **Front-of-House Terminal**: Displays `ROLE: CASHIER` top-right. Cashiers are automatically routed directly to the checkout interface (`/pos`) for fast register operations.
-> - **Streamlined Register Workflow**: Cashiers browse products (*Minimalist Leather Wallet, Stainless Steel Water Bottle, Hydrating Face Serum, Organic Green Tea, Wireless Earbuds, Mechanical Keyboards, Ergonomic Desk Chairs*), view live inventory badges (*In Stock (58)*), search register items, apply discounts, tag customer names, and complete cash/credit sales.
-> - **Restricted Access**: Cashiers cannot access executive revenue dashboards (`/`), master product catalog editing (`/products`), inventory stock overrides (`/inventory`), or financial analytics reports (`/reports`).
-
----
-
-## 👥 Role-Based User Testing Guide (Who Does What Summary)
-
-Bazaar enforces strict **Role-Based Access Control (RBAC)** across API endpoints and dashboard navigation. Use the credentials below to log in or use the top-right **"Simulate Role"** switcher in the sidebar to test each user perspective:
-
-### 1. 🛡️ Admin User (`admin@bazaar.com` / `securepassword123`)
-- **Full Access Level**: Unrestricted control across all store operations and settings.
-- **What Admin CAN Do**:
-  - ✅ View full financial analytics, revenue charts, top categories, and sales performance on the **Dashboard** (`/`).
-  - ✅ Add, edit, update prices, and delete products in the **Product Catalog** (`/products`).
-  - ✅ Monitor stock levels, track low-stock alerts, and perform manual stock adjustments in **Inventory** (`/inventory`).
-  - ✅ Search, filter, view, print, and export all customer invoices in **Invoices** (`/invoices`).
-  - ✅ Access deep financial profit-margin reports and analytics in **Reports** (`/reports`).
-  - ✅ Process store checkout orders in the **POS Terminal** (`/pos`).
-
-### 2. 👔 Store Manager User (`manager@bazaar.com` / `securepassword123`)
-- **Operational Access Level**: Storefront and inventory management focus.
-- **What Manager CAN Do**:
-  - ✅ View high-level store sales dashboard (`/`).
-  - ✅ Oversee stock quantities and perform stock level updates in **Inventory** (`/inventory`).
-  - ✅ Search, review, print, and share customer invoices in **Invoices** (`/invoices`).
-  - ✅ Ring up customer purchases in the **POS Terminal** (`/pos`).
-- **What Manager CANNOT Do**:
-  - ❌ Cannot edit or delete master product pricing & catalog metadata (`/products`).
-  - ❌ Cannot access sensitive executive financial reports (`/reports`).
-
-### 3. 🛒 Cashier User (`cashier@bazaar.com` / `securepassword123`)
-- **Front-of-House Access Level**: Streamlined for fast checkout and customer service.
-- **What Cashier CAN Do**:
-  - ✅ Search product register by name or SKU and add items to cart.
-  - ✅ Apply store discounts and register customer names/phones.
-  - ✅ Process transactions and instantly print digital sales receipts or A4/Thermal tax invoices (`/pos`).
-  - ✅ Look up past store customer receipts in **Invoices** (`/invoices`).
-- **What Cashier CANNOT Do**:
-  - ❌ Cannot view executive revenue dashboards (`/`).
-  - ❌ Cannot add or edit master products (`/products`).
-  - ❌ Cannot modify inventory quantities (`/inventory`).
-  - ❌ Cannot access financial reports (`/reports`).
+3. **🛒 Cashier User (`cashier@bazaar.com`)**:
+   - ✅ Search product register, add items to cart, and apply store discounts (`/pos`).
+   - ✅ Process transactions and print A4 / 80mm thermal receipts (`/pos`).
+   - ✅ Look up past customer store receipts in **Invoices** (`/invoices`).
+   - ❌ *Restricted*: Automatically redirected away from executive dashboards, product editing, stock overrides, and financial reports.
 
 ---
 
@@ -142,8 +88,8 @@ Bazaar enforces strict **Role-Based Access Control (RBAC)** across API endpoints
 
 - **Language:** TypeScript (End-to-end type safety)
 - **Framework:** Next.js (App Router, Edge Middleware, Server Actions)
-- **Database & ORM:** PostgreSQL + Drizzle ORM (PostgreSQL RLS for Tenant Data Isolation)
-- **Authentication:** JWT Authentication & Custom Web Crypto Edge Middleware
+- **Database & ORM:** PostgreSQL + Drizzle ORM (PostgreSQL RLS for Tenant Isolation)
+- **Authentication:** JWT Authentication & Web Crypto Edge Middleware
 - **Styling & UI:** Vanilla CSS Modules, Modern Typography (`Inter` & `Instrument Serif`), Dark/Light Mode, Glassmorphic Design System, and `@media print` CSS engine.
 
 ---
@@ -164,38 +110,33 @@ Follow these steps to get a local copy of Bazaar up and running on your machine.
 
 ### Prerequisites
 
-Make sure you have the following installed on your system:
 - [Node.js](https://nodejs.org) (v18.0.0 or higher)
 - [npm](https://npmjs.com) or `yarn` / `pnpm`
 
-### Installation & Run Steps
+### Installation & Setup
 
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/maliha-mobassira/bazaar.git
-   ```
-
-2. **Navigate to the project directory:**
-   ```bash
    cd bazaar
    ```
 
-3. **Install dependencies:**
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-4. **Configure Environment Variables:**
+3. **Configure Environment Variables:**
    Create a `.env` file in the root directory:
    ```env
    DATABASE_URL=postgresql://username:password@ep-cool-db.neon.tech/bazaar?sslmode=require
    JWT_SECRET=supersecretkey123
    ```
 
-5. **Seed Test Database & Credentials:**
+4. **Seed Test Database & User Accounts:**
    Start the dev server and visit `http://localhost:3000/api/debug/reset` in your browser to seed test products, store tenants, and default user accounts (`admin@bazaar.com` & `cashier@bazaar.com`).
 
-6. **Start the local development server:**
+5. **Start local development server:**
    ```bash
    npm run dev
    ```
@@ -215,4 +156,5 @@ Make sure you have the following installed on your system:
 ## 📬 Contact
 
 - **Maliha Mobassira** - [GitHub Profile](https://github.com/maliha-mobassira)
+- **Live Application:** [https://bazaar-pfjm.onrender.com](https://bazaar-pfjm.onrender.com)
 - **Project Repository:** [https://github.com/maliha-mobassira/bazaar](https://github.com/maliha-mobassira/bazaar)
